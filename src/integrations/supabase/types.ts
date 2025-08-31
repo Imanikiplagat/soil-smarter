@@ -14,7 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      farms: {
+        Row: {
+          area_hectares: number
+          created_at: string
+          crop_type: string
+          id: string
+          location: string
+          name: string
+          organic_matter: number | null
+          soil_moisture: number | null
+          soil_ph: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_hectares: number
+          created_at?: string
+          crop_type: string
+          id?: string
+          location: string
+          name: string
+          organic_matter?: number | null
+          soil_moisture?: number | null
+          soil_ph?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_hectares?: number
+          created_at?: string
+          crop_type?: string
+          id?: string
+          location?: string
+          name?: string
+          organic_matter?: number | null
+          soil_moisture?: number | null
+          soil_ph?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          farm_id: string
+          id: string
+          model_version: string | null
+          user_id: string
+          weather_summary: Json | null
+          yield_per_hectare: number
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          farm_id: string
+          id?: string
+          model_version?: string | null
+          user_id: string
+          weather_summary?: Json | null
+          yield_per_hectare: number
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          farm_id?: string
+          id?: string
+          model_version?: string | null
+          user_id?: string
+          weather_summary?: Json | null
+          yield_per_hectare?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          farm_size_hectares: number | null
+          id: string
+          location: string | null
+          phone: string | null
+          primary_crops: string[] | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          farm_size_hectares?: number | null
+          id?: string
+          location?: string | null
+          phone?: string | null
+          primary_crops?: string[] | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          farm_size_hectares?: number | null
+          id?: string
+          location?: string | null
+          phone?: string | null
+          primary_crops?: string[] | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

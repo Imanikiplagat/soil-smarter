@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { MapPin, User, Phone, Sprout, BarChart3, TestTube } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormData {
   name: string;
@@ -25,6 +27,7 @@ interface PredictionFormProps {
 
 const PredictionForm = ({ onPrediction }: PredictionFormProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     phone: "",
@@ -43,6 +46,16 @@ const PredictionForm = ({ onPrediction }: PredictionFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to generate yield predictions.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Validation
@@ -56,26 +69,50 @@ const PredictionForm = ({ onPrediction }: PredictionFormProps) => {
       return;
     }
 
-    // Simulate API call with realistic delay
-    setTimeout(() => {
-      const mockResult = {
-        yield: (Math.random() * 3 + 2).toFixed(2), // 2-5 t/ha
+    try {
+      const { data, error } = await supabase.functions.invoke('predict-yield', {
+        body: {
+          name: formData.name,
+          phone: formData.phone,
+          location: formData.location,
+          crop: formData.crop,
+          area_ha: parseFloat(formData.area) || 1,
+          soil_ph: parseFloat(formData.soilPh) || 6.5,
+          soil_moisture: parseFloat(formData.soilMoisture) || 25,
+          organic_matter: parseFloat(formData.organicMatter) || 2.5
+        }
+      });
+
+      if (error) throw error;
+
+      const result = {
+        yield: data.prediction.yield_per_hectare.toFixed(2),
         weather: {
-          temperature: (Math.random() * 10 + 18).toFixed(1), // 18-28°C
-          rainfall: (Math.random() * 60 + 30).toFixed(0), // 30-90mm
+          temperature: data.prediction.weather_summary.temperature.toFixed(1),
+          rainfall: data.prediction.weather_summary.rainfall.toFixed(0),
+          humidity: data.prediction.weather_summary.humidity.toFixed(0)
         },
-        confidence: (Math.random() * 20 + 80).toFixed(0), // 80-100%
+        confidence: data.prediction.confidence_score.toFixed(0),
+        totalYield: data.prediction.total_yield.toFixed(2),
+        farmId: data.prediction.farm_id,
         farmData: formData,
       };
       
-      onPrediction(mockResult);
-      setIsLoading(false);
+      onPrediction(result);
       
       toast({
         title: "Prediction Complete!",
-        description: "Your yield prediction has been generated successfully.",
+        description: `Estimated yield: ${result.yield} t/ha with ${result.confidence}% confidence`,
       });
-    }, 2000);
+    } catch (error: any) {
+      toast({
+        title: "Prediction Failed",
+        description: error.message || "There was an error generating your yield prediction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

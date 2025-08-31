@@ -1,13 +1,65 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import HeroSection from "@/components/HeroSection";
+import PredictionForm from "@/components/PredictionForm";
+import ResultsDisplay from "@/components/ResultsDisplay";
+import SubscriptionModal from "@/components/SubscriptionModal";
+
+type AppState = "hero" | "form" | "results";
 
 const Index = () => {
+  const [currentState, setCurrentState] = useState<AppState>("hero");
+  const [predictionResult, setPredictionResult] = useState<any>(null);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
+  const handleGetStarted = () => {
+    setCurrentState("form");
+  };
+
+  const handlePrediction = (result: any) => {
+    setPredictionResult(result);
+    setCurrentState("results");
+  };
+
+  const handleBackToForm = () => {
+    setCurrentState("form");
+  };
+
+  const handleBackToHero = () => {
+    setCurrentState("hero");
+    setPredictionResult(null);
+  };
+
+  const handleSubscribe = () => {
+    setShowSubscriptionModal(true);
+  };
+
+  const renderCurrentView = () => {
+    switch (currentState) {
+      case "hero":
+        return <HeroSection onGetStarted={handleGetStarted} />;
+      case "form":
+        return <PredictionForm onPrediction={handlePrediction} />;
+      case "results":
+        return (
+          <ResultsDisplay 
+            result={predictionResult} 
+            onBack={handleBackToForm}
+            onSubscribe={handleSubscribe}
+          />
+        );
+      default:
+        return <HeroSection onGetStarted={handleGetStarted} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      {renderCurrentView()}
+      <SubscriptionModal 
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+      />
+    </>
   );
 };
 

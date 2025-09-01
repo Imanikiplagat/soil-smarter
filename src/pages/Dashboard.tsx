@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Leaf, BarChart3, TrendingUp, Calendar, MapPin, Plus } from "lucide-react";
+import { Leaf, BarChart3, TrendingUp, Calendar, MapPin, Plus, Crown, Zap, Shield, MessageSquare, FileText, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import SubscriptionModal from "@/components/SubscriptionModal";
 
 interface Farm {
   id: string;
@@ -41,6 +42,7 @@ const Dashboard = () => {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -257,8 +259,99 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
+          {/* Premium Features Section */}
+          {profile?.subscription_tier !== 'premium' && (
+            <Card className="lg:col-span-2 gradient-card border-success/20">
+              <CardHeader className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="p-3 rounded-full bg-success/10 border border-success/20">
+                    <Crown className="w-6 h-6 text-success" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-primary">
+                  Unlock Premium Features
+                </CardTitle>
+                <CardDescription className="text-lg">
+                  Get advanced tools and insights to maximize your farming potential
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">What You'll Get:</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-5 h-5 text-success" />
+                        <span>Unlimited yield predictions</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="w-5 h-5 text-success" />
+                        <span>Advanced forecasting models</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Smartphone className="w-5 h-5 text-success" />
+                        <span>SMS alerts & notifications</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-success" />
+                        <span>Downloadable detailed reports</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-5 h-5 text-success" />
+                        <span>Monthly yield forecasts</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Shield className="w-5 h-5 text-success" />
+                        <span>Priority support</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">Secure Payment Options:</h3>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-lg bg-background/50 border">
+                        <h4 className="font-medium mb-2">💳 IntaSend Payment Gateway</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Secure payments via M-Pesa, Airtel Money, and major credit cards
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-background/50 border">
+                        <h4 className="font-medium mb-2">🔒 Bank-Grade Security</h4>
+                        <p className="text-sm text-muted-foreground">
+                          SSL encryption and PCI DSS compliance for your protection
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg bg-background/50 border">
+                        <h4 className="font-medium mb-2">📱 Mobile Money Integration</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Pay easily with your mobile money account
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    size="lg"
+                    className="gradient-success text-success-foreground hover:opacity-90"
+                    onClick={() => setShowSubscriptionModal(true)}
+                  >
+                    <Crown className="w-5 h-5 mr-2" />
+                    Choose Your Plan
+                  </Button>
+                  <Button variant="outline" size="lg">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    Learn More
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Recent Predictions */}
-          <Card className="lg:col-span-2">
+          <Card className={profile?.subscription_tier !== 'premium' ? "lg:col-span-2" : "lg:col-span-2"}>
             <CardHeader>
               <CardTitle>Recent Predictions</CardTitle>
               <CardDescription>Your latest yield predictions and confidence scores</CardDescription>
@@ -310,6 +403,12 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Subscription Modal */}
+      <SubscriptionModal 
+        isOpen={showSubscriptionModal} 
+        onClose={() => setShowSubscriptionModal(false)} 
+      />
     </div>
   );
 };

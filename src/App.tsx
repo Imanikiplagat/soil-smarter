@@ -11,7 +11,15 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "@/components/Navbar";
 
-const queryClient = new QueryClient();
+// Create QueryClient instance outside of component to avoid recreation
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (

@@ -18,9 +18,16 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Get authenticated user
+    // Get authenticated user and set auth context
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
+    
+    // Set the auth token for the supabase client to establish proper context
+    await supabaseClient.auth.setSession({
+      access_token: token,
+      refresh_token: ""
+    });
+    
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     

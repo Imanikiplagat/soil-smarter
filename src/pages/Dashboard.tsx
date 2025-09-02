@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/enhanced-button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { Leaf, BarChart3, TrendingUp, Calendar, MapPin, Plus, Crown, Zap, Shield, MessageSquare, FileText, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import SubscriptionModal from "@/components/SubscriptionModal";
+import { PremiumFeatureGate } from "@/components/PremiumFeatureGate";
 
 interface Farm {
   id: string;
@@ -37,6 +39,7 @@ interface Profile {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { isPremium, subscriptionTier } = useSubscription();
   const navigate = useNavigate();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -122,8 +125,8 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Badge variant={profile?.subscription_tier === 'premium' ? 'default' : 'secondary'}>
-              {profile?.subscription_tier || 'Free'} Plan
+            <Badge variant={isPremium ? 'default' : 'secondary'}>
+              {subscriptionTier || 'Free'} Plan
             </Badge>
             <Button onClick={() => navigate('/')} className="gap-2">
               <Plus className="w-4 h-4" />
@@ -260,7 +263,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Premium Features Section */}
-          {profile?.subscription_tier !== 'premium' && (
+          {!isPremium && (
             <Card className="lg:col-span-2 gradient-card border-success/20">
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
@@ -351,14 +354,19 @@ const Dashboard = () => {
           )}
 
           {/* Recent Predictions */}
-          <Card className={profile?.subscription_tier !== 'premium' ? "lg:col-span-2" : "lg:col-span-2"}>
-            <CardHeader>
-              <CardTitle>Recent Predictions</CardTitle>
-              <CardDescription>Your latest yield predictions and confidence scores</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {predictions.slice(0, 5).map((prediction) => {
+          <PremiumFeatureGate 
+            feature="Advanced Predictions History"
+            description="View detailed prediction history with confidence scores and farm analytics"
+            onUpgrade={() => setShowSubscriptionModal(true)}
+            fallback={
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Recent Predictions</CardTitle>
+                  <CardDescription>Your latest yield predictions (Limited to 3 for free users)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {predictions.slice(0, isPremium ? 10 : 3).map((prediction) => {
                   const farm = farms.find(f => f.id === prediction.farm_id);
                   return (
                     <div key={prediction.id} className="flex items-center justify-between p-4 rounded-lg border">
@@ -388,19 +396,87 @@ const Dashboard = () => {
                       </div>
                     </div>
                   );
-                })}
-                {predictions.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No predictions yet. Start by creating your first yield prediction!</p>
-                    <Button className="mt-4" onClick={() => navigate('/')}>
-                      Create Prediction
-                    </Button>
+                    })}
+                    {predictions.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No predictions yet. Start by creating your first yield prediction!</p>
+                        <Button className="mt-4" onClick={() => navigate('/')}>
+                          Create Prediction
+                        </Button>
+                      </div>
+                    )}
+                    {!isPremium && predictions.length > 3 && (
+                      <div className="text-center py-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Showing 3 of {predictions.length} predictions
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setShowSubscriptionModal(true)}
+                        >
+                          <Crown className="w-4 h-4 mr-2" />
+                          View All Predictions
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            }
+          >
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Advanced Predictions History</CardTitle>
+                <CardDescription>Complete prediction history with detailed analytics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {predictions.map((prediction) => {
+                    const farm = farms.find(f => f.id === prediction.farm_id);
+                    return (
+                      <div key={prediction.id} className="flex items-center justify-between p-4 rounded-lg border">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-full bg-primary/10">
+                            <BarChart3 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{farm?.name || 'Unknown Farm'}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {farm?.crop_type} • {farm?.location}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <p className="font-medium">{prediction.yield_per_hectare.toFixed(1)} t/ha</p>
+                              <p className="text-sm text-muted-foreground">
+                                {prediction.confidence_score}% confidence
+                              </p>
+                            </div>
+                            <Badge variant={prediction.confidence_score > 80 ? 'default' : 'secondary'}>
+                              {prediction.confidence_score > 80 ? 'High' : 'Medium'} Confidence
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {predictions.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No predictions yet. Start by creating your first yield prediction!</p>
+                      <Button className="mt-4" onClick={() => navigate('/')}>
+                        Create Prediction
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </PremiumFeatureGate>
         </div>
       </div>
       

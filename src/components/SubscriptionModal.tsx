@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, MessageSquare, FileText, TrendingUp, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -21,13 +22,26 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "premium">("premium");
 
-  const handleSubscribe = () => {
-    // This would integrate with IntaSend payment
-    toast({
-      title: "Payment Integration Required",
-      description: "Connect to Supabase first to enable secure payment processing with IntaSend.",
-      variant: "destructive",
-    });
+  const handleSubscribe = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { plan: selectedPlan },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      toast({
+        title: "Payment Error",
+        description: "Failed to create checkout session. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const plans = [

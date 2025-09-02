@@ -55,7 +55,10 @@ Node.js + npm
 - URL: [Lovable Project Link](https://lovable.dev/projects/d2e9eb10-317e-49c1-b37b-660c10369b36)  
 - Contributors:  
   - [Brian Kipchumba](https://github.com/Rufron)  
-  - [Faith Jerop](https://github.com/Imanikiplagat)  
+  - [Faith Jerop](https://github.com/Imanikiplagat)
+ 
+## Deployment link
+Follow this link: https://soil-smarter.vercel.app/ 
 
 
 

@@ -1,8 +1,8 @@
-🌱 Agritech-Forecast
+## 🌱 Agritech-Forecast
 
 Crop Yield Prediction & Farm Management Dashboard
 
-📌 Project Overview
+# 📌 Project Overview
 
 Agritech-Forecast is a modern crop yield prediction and farm management application designed to empower small-scale farmers. The app integrates weather data, soil inputs, and machine learning models to provide actionable insights on crop yield forecasts.
 
@@ -10,7 +10,7 @@ Beyond predictions, the app also offers a farm expense and profit dashboard, all
 
 This project was built using Lovable, with additional development done locally in VS Code and GitHub.
 
-🚀 Features
+## 🚀 Features
 
 User Authentication & Authorization (via Supabase)
 
@@ -30,7 +30,7 @@ Modern Responsive UI with shadcn-ui + Tailwind CSS
 
 Deployed via Lovable with support for custom domains
 
-🛠 Tech Stack
+## 🛠 Tech Stack
 
 Frontend: React (with Vite + TypeScript)
 

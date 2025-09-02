@@ -56,6 +56,9 @@ Node.js + npm
 - Contributors:  
   - [Brian Kipchumba](https://github.com/Rufron)  
   - [Faith Jerop](https://github.com/Imanikiplagat)
+  - 
+ ## Pitch Deck
+ Here is the link to canva:https://www.canva.com/design/DAGxdPMlf2k/X-d9a-L1euFEnx-MQ6UPJQ/edit?utm_content=DAGxdPMlf2k&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
  
 ## Deployment link
 Follow this link: https://soil-smarter.vercel.app/ 
